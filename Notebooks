@@ -1,0 +1,105 @@
+using System;
+using System.Collections.Generic;
+
+class Program
+{
+    static void Dijkstra(Dictionary<int, Dictionary<int, int>> graph, int startNode, int endNode)
+    {
+        int nodeCount = graph.Count;
+
+        int[] distances = new int[nodeCount];
+        bool[] visited = new bool[nodeCount];
+        int[] previousNodes = new int[nodeCount];
+
+        for (int i = 0; i < nodeCount; i++)
+        {
+            distances[i] = int.MaxValue;
+            visited[i] = false;
+            previousNodes[i] = -1;
+        }
+
+        distances[startNode] = 0;
+
+        for (int i = 0; i < nodeCount - 1; i++)
+        {
+            int currentNode = GetMinDistanceNode(distances, visited);
+            visited[currentNode] = true;
+
+            if (currentNode == endNode)
+                break;
+
+            if (graph.ContainsKey(currentNode))
+            {
+                foreach (var neighbor in graph[currentNode])
+                {
+                    int neighborNode = neighbor.Key;
+                    int edgeWeight = neighbor.Value;
+                    int newDistance = distances[currentNode] + edgeWeight;
+
+                    if (newDistance < distances[neighborNode])
+                    {
+                        distances[neighborNode] = newDistance;
+                        previousNodes[neighborNode] = currentNode;
+                    }
+                }
+            }
+        }
+
+        PrintShortestPath(distances, previousNodes, startNode, endNode);
+    }
+
+    static int GetMinDistanceNode(int[] distances, bool[] visited)
+    {
+        int minDistance = int.MaxValue;
+        int minDistanceNode = -1;
+
+        for (int i = 0; i < distances.Length; i++)
+        {
+            if (!visited[i] && distances[i] < minDistance)
+            {
+                minDistance = distances[i];
+                minDistanceNode = i;
+            }
+        }
+
+        return minDistanceNode;
+    }
+
+    static void PrintShortestPath(int[] distances, int[] previousNodes, int startNode, int endNode)
+    {
+        List<int> path = new List<int>();
+
+        int currentNode = endNode;
+
+        while (currentNode != -1)
+        {
+            path.Add(currentNode);
+            currentNode = previousNodes[currentNode];
+        }
+
+        path.Reverse();
+
+        Console.WriteLine("Shortest path from Node " + startNode + " to Node " + endNode + ":");
+        Console.WriteLine(string.Join(" -> ", path));
+        Console.WriteLine("Total distance: " + distances[endNode]);
+    }
+
+    static void Main()
+    {
+        // Создание графа
+        Dictionary<int, Dictionary<int, int>> graph = new Dictionary<int, Dictionary<int, int>>();
+
+        // Добавление ребер и их весов в граф
+        graph[0] = new Dictionary<int, int>() { { 1, 4 }, { 2, 2 } };
+        graph[1] = new Dictionary<int, int>() { { 2, 1 }, { 3, 5 } };
+        graph[2] = new Dictionary<int, int>() { { 3, 8 }, { 4, 10 } };
+        graph[3] = new Dictionary<int, int>() { { 4, 2 } };
+        graph[4] = new Dictionary<int, int>();
+
+        int startNode = 0;
+        int endNode = 4;
+
+        // Применение алгоритма Дейкстры
+        Dijkstra(graph, startNode, endNode);
+    }
+}
